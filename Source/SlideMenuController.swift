@@ -897,22 +897,22 @@ open class SlideMenuController: UIViewController, UIGestureRecognizerDelegate {
     }
     
     fileprivate func setOpenWindowLevel() {
-        if SlideMenuOptions.hideStatusBar {
-            DispatchQueue.main.async(execute: {
-                if let window = UIApplication.shared.keyWindow {
-                    window.windowLevel = UIWindowLevelStatusBar + 1
-                }
-            })
+        guard SlideMenuOptions.hideStatusBar else { return }
+
+        DispatchQueue.main.async {
+            if let window = UIApplication.shared.getActiveKeyWindow() {
+                window.windowLevel = .statusBar + 1
+            }
         }
     }
-    
+
     fileprivate func setCloseWindowLevel() {
-        if SlideMenuOptions.hideStatusBar {
-            DispatchQueue.main.async(execute: {
-                if let window = UIApplication.shared.keyWindow {
-                    window.windowLevel = UIWindowLevelNormal
-                }
-            })
+        guard SlideMenuOptions.hideStatusBar else { return }
+
+        DispatchQueue.main.async {
+            if let window = UIApplication.shared.getActiveKeyWindow() {
+                window.windowLevel = .normal
+            }
         }
     }
     
@@ -1084,3 +1084,15 @@ extension UIViewController {
         }
     }
 }
+
+
+extension UIApplication {
+    func getActiveKeyWindow() -> UIWindow? {
+        return self.connectedScenes
+            .filter { $0.activationState == .foregroundActive }
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow }
+    }
+}
+
